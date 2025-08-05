@@ -1,40 +1,103 @@
 {
-  "position": "top",
-  "modules-left": ["hyprland/workspaces"],
-  "modules-center": ["hyprland/window"],
-  "modules-right": ["network", "pulseaudio", "battery", "clock"],
-  "clock": {
-    "format": "<span foreground='#f5c2e7'>   </span>{:%a %d %H:%M}",
-    "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>"
-  },
-  "battery": {
-    "states": {
-      "warning": 30,
-      "critical": 15
+    "layer": "bottom",
+    "position": "top",
+    "margin-left": 0,
+    "margin-right": 0,
+    "margin-top": 0,
+    "margin-bottom": 0,
+    "spacing": 1,
+    "exclusive": true,
+
+    "modules-left": ["hyprland/workspaces"],
+    "modules-center": ["clock"],
+    "modules-right": ["cpu", "temperature", "memory", "disk", "pulseaudio", "custom/sepp", "network", "custom/sepp", "tray"],
+
+    "hyprland/workspaces": {
+        "on-click": "activate",
+        "persistent-workspaces": {
+            "*": 5,
+         },
+        "format": "{icon}",
+        "format-icons": {
+            "1": "1",
+            "2": "2",
+            "3": "3",
+            "4": "4",
+            "5": "5",
+            "6": "6",
+            "7": "7",
+            "8": "8",
+            "9": "9",
+            "10": "10"
+            // "urgent": "",
+            // "active": "",
+            // "default": ""
+         },
     },
-    "format": "<span size='13000' foreground='#a6e3a1'>{icon} </span> {capacity}%",
-    "format-warning": "<span size='13000' foreground='#B1E3AD'>{icon} </span> {capacity}%",
-    "format-critical": "<span size='13000' foreground='#E38C8F'>{icon} </span> {capacity}%",
-    "format-charging": "<span size='13000' foreground='#B1E3AD'> </span>{capacity}%",
-    "format-plugged": "<span size='13000' foreground='#B1E3AD'> </span>{capacity}%",
-    "format-alt": "<span size='13000' foreground='#B1E3AD'>{icon} </span> {time}",
-    "format-full": "<span size='13000' foreground='#B1E3AD'> </span>{capacity}%",
-    "format-icons": ["", "", "", "", ""],
-    "tooltip-format": "{time}"
-  },
-  "network": {
-    "format-wifi": "<span size='13000' foreground='#f5e0dc'>  </span>{essid}",
-    "format-ethernet": "<span size='13000' foreground='#f5e0dc'>󰤭  </span> Disconnected",
-    "format-linked": "{ifname} (No IP) ",
-    "format-disconnected": "<span size='13000' foreground='#f5e0dc'>  </span>Disconnected",
-    "tooltip-format-wifi": "Signal Strenght: {signalStrength}%"
-  },
-  "pulseaudio": {
-      "format": "{icon}  {volume}%",
-      "format-muted": "",
-      "format-icons": {
-          "default": ["", "", " "]
-      },
-      "on-click": "pavucontrol"
-  }
+    "tray": {
+        "icon-size": 18,
+        "spacing": 5,
+        "show-passive-items": true,
+    },
+    "clock": {
+        "interval": 60,
+        "format": "{:%a %b %d  %I:%M %p}", // %b %d %Y  --Date formatting
+        "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>",
+        "format-alt": "{:%m-%d-%Y}"
+    },
+   "temperature": {
+        "critical-threshold": 80,
+        "interval": 2,
+        "format": "  {temperatureC}°C",
+        "format-icons": ["", "", ""]
+    },
+    "cpu": {
+        "interval": 2,
+        "format": "   {usage}%",
+        "tooltip": false
+    },
+    "memory": {
+        "interval": 2,
+        "format": "   {}%"
+    },
+   "disk": {
+        "interval": 15,
+        "format": "󰋊  {percentage_used}%",
+    },
+    "network": {
+        "format-wifi": "     {ipaddr}",
+        "format-ethernet": " {ipaddr}/{cidr}",
+        "tooltip-format-wifi": "{essid} ({signalStrength}%) ",
+        "tooltip-format": "{ifname} via {gwaddr} ",
+        "format-linked": "{ifname} (No IP) ",
+        "format-disconnected": "Disconnected ⚠",
+        "format-alt": "{ifname}: {ipaddr}/{cidr}"
+    },
+    "pulseaudio": {
+        "format": "{icon}    {volume}%",
+        "format-bluetooth": "{icon} {volume}% 󰂯",
+        "format-bluetooth-muted": "󰖁 {icon} 󰂯",
+        "format-muted": "󰖁  muted",
+        "format-source": "",
+        "format-source-muted": "",
+        "format-icons": {
+            "headphone": "󰋋",
+            "hands-free": "󱡒",
+            "headset": "󰋎",
+            "phone": "",
+            "portable": "",
+            "car": "",
+            "default": ["", "", ""]
+        },
+        "on-click": "pavucontrol"
+    },
+    "custom/power": {
+      "format": "{icon}",
+      "format-icons": "󰣇",
+      "exec-on-event": "true",
+      "on-click": "wofi --show=drun",
+    },
+    "custom/sepp": {
+        "format": "|"
+    },
 }

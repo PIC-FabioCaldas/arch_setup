@@ -1,50 +1,63 @@
-"$schema" = 'https://starship.rs/config-schema.json'
+# ───────────────────────────────────────────────────────────
+#                  STARSHIP CONFIGURATION
+#   This file customizes the appearance and behavior of your
+#   shell prompt using the Starship prompt tool.
+#   Comments below explain each section in detail.
+# ───────────────────────────────────────────────────────────
 
-format = """
-[](surface0)\
-$os\
-$username\
-[](bg:peach fg:surface0)\
-$directory\
-[](fg:peach bg:green)\
-$git_branch\
-$git_status\
-[](fg:green bg:teal)\
-$c\
-$rust\
-$golang\
-$nodejs\
-$php\
-$java\
-$kotlin\
-$haskell\
-$python\
-[](fg:teal bg:blue)\
-$docker_context\
-[](fg:blue bg:purple)\
-$time\
-[ ](fg:purple)\
-$line_break$character"""
+# GENERAL SETTINGS
+add_newline = false          # Don't add a newline between prompts (keep it compact)
+format = """$directory$os$line_break$character"""   # Defines what appears on the left prompt (directory, OS icon, line break, then prompt character)
+palette = "catppuccin_mocha" # Use the custom color palette defined below
+right_format = """$all"""    # Everything else (i.e., modules not named in `format`) appears on the right side of the prompt
+command_timeout = 500        # Timeout (ms) for command modules to run (e.g., git status)
 
-palette = 'catppuccin_mocha'
+# DIRECTORY SUBSTITUTIONS
+[directory.substitutions]
+# Substitutes common directory names with icons for a nicer look
+"Documents" = "󰈙 "
+"Downloads" = " "
+"Music" = "󰝚 "
+"Pictures" = " "
+"Developer" = "󰲋 "
 
-[palettes.gruvbox_dark]
-color_fg0 = '#fbf1c7'
-color_bg1 = '#3c3836'
-color_bg3 = '#665c54'
-color_blue = '#458588'
-color_aqua = '#689d6a'
-color_green = '#98971a'
-color_orange = '#d65d0e'
-color_purple = '#b16286'
-color_red = '#cc241d'
-color_yellow = '#d79921'
+# LINE BREAK
+[line_break]
+disabled = false             # Enables a line break between prompt segments (for readability)
 
+# GIT BRANCH
+[git_branch]
+symbol = " "               # Symbol before the branch name
+format = '[ $symbol$branch ]($style)'  # How the branch info is shown (with styling)
+
+# AWS MODULE
+[aws]
+format = '[$symbol(profile: "$profile" )(\(region: $region\) )]($style)'
+disabled = false
+style = 'bold blue'         # Text style for AWS info
+symbol = " "               # Symbol for AWS
+
+# GOLANG VERSION
+[golang]
+format = '[ $version](bold sky)' # Shows Go version in "sky" color with icon
+
+# KUBERNETES
+[kubernetes]
+symbol = '☸ '               # Kubernetes symbol
+disabled = true             # Disabled unless you want cluster info
+detect_files = ['Dockerfile']  # Triggers if Dockerfile is present
+format = '[$symbol$context( \($namespace\))]($style) '
+contexts = [
+  { context_pattern = "arn:aws:eks:us-west-2:577926974532:cluster/zd-pvc-omer", style = "green", context_alias = "omerxx", symbol = " " },
+] # You can define custom styles for contexts
+
+# COLOR PALETTE (used by many modules for consistent theming)
 [palettes.catppuccin_mocha]
+# Defines a set of named colors (Catppuccin Mocha theme) for use throughout the prompt
 rosewater = "#f5e0dc"
 flamingo = "#f2cdcd"
 pink = "#f5c2e7"
-orange = "#cba6f7"
+mauve = "#cba6f7"
 red = "#f38ba8"
 maroon = "#eba0ac"
 peach = "#fab387"
@@ -68,123 +81,24 @@ base = "#1e1e2e"
 mantle = "#181825"
 crust = "#11111b"
 
-[os]
-disabled = false
-style = "bg:surface0 fg:text"
-
-[os.symbols]
-Windows = "󰍲"
-Ubuntu = "󰕈"
-SUSE = ""
-Raspbian = "󰐿"
-Mint = "󰣭"
-Macos = ""
-Manjaro = ""
-Linux = "󰌽"
-Gentoo = "󰣨"
-Fedora = "󰣛"
-Alpine = ""
-Amazon = ""
-Android = ""
-Arch = "󰣇"
-Artix = "󰣇"
-CentOS = ""
-Debian = "󰣚"
-Redhat = "󱄛"
-RedHatEnterprise = "󱄛"
-
+# USERNAME MODULE
 [username]
-show_always = true
-style_user = "bg:surface0 fg:text"
-style_root = "bg:surface0 fg:text"
-format = '[ $user ]($style)'
+show_always = false         # Only show username when necessary (e.g., SSH)
+format = '[ elliot]($style)' # How username is shown
 
-[directory]
-style = "fg:mantle bg:peach"
-format = "[ $path ]($style)"
-truncation_length = 3
-truncation_symbol = "…/"
-
-[directory.substitutions]
-"Documents" = "󰈙 "
-"Downloads" = " "
-"Music" = "󰝚 "
-"Pictures" = " "
-"Developer" = "󰲋 "
-
-[git_branch]
-symbol = ""
-style = "bg:teal"
-format = '[[ $symbol $branch ](fg:base bg:green)]($style)'
-
-[git_status]
-style = "bg:teal"
-format = '[[($all_status$ahead_behind )](fg:base bg:green)]($style)'
-
-[nodejs]
-symbol = ""
-style = "bg:teal"
-format = '[[ $symbol( $version) ](fg:base bg:teal)]($style)'
-
-[c]
+# SYMBOLS FOR OTHER LANGUAGES/TOOLS
+# Each of these sections customizes the icon for a language or tool
+[buf]            # Buf (Protobuf tool)
+symbol = " "
+[c]              # C language
 symbol = " "
-style = "bg:teal"
-format = '[[ $symbol( $version) ](fg:base bg:teal)]($style)'
-
-[rust]
-symbol = ""
-style = "bg:teal"
-format = '[[ $symbol( $version) ](fg:base bg:teal)]($style)'
-
-[golang]
-symbol = ""
-style = "bg:teal"
-format = '[[ $symbol( $version) ](fg:base bg:teal)]($style)'
-
-[php]
-symbol = ""
-style = "bg:teal"
-format = '[[ $symbol( $version) ](fg:base bg:teal)]($style)'
-
-[java]
-symbol = " "
-style = "bg:teal"
-format = '[[ $symbol( $version) ](fg:base bg:teal)]($style)'
-
-[kotlin]
-symbol = ""
-style = "bg:teal"
-format = '[[ $symbol( $version) ](fg:base bg:teal)]($style)'
-
-[haskell]
-symbol = ""
-style = "bg:teal"
-format = '[[ $symbol( $version) ](fg:base bg:teal)]($style)'
-
-[python]
-symbol = ""
-style = "bg:teal"
-format = '[[ $symbol( $version) ](fg:base bg:teal)]($style)'
-
-[docker_context]
-symbol = ""
-style = "bg:mantle"
-format = '[[ $symbol( $context) ](fg:#83a598 bg:color_bg3)]($style)'
-
-[time]
-disabled = false
-time_format = "%R"
-style = "bg:peach"
-format = '[[  $time ](fg:mantle bg:purple)]($style)'
-
-[line_break]
-disabled = false
-
-[character]
-disabled = false
-success_symbol = '[](bold fg:green)'
-error_symbol = '[](bold fg:red)'
-vimcmd_symbol = '[](bold fg:creen)'
-vimcmd_replace_one_symbol = '[](bold fg:purple)'
-vimcmd_replace_symbol = '[](bold fg:purple)'
-vimcmd_visual_symbol = '[](bold fg:lavender)'
+[conda]          # Conda environments
+symbol = " "
+[crystal]        # Crystal language
+symbol = " "
+[dart]           # Dart language
+symbol = " "
+[directory]      # Directory segment
+read_only = " 󰌾"         # Icon for read-only directories
+format = "[ $path ](bold sky)" # How the path is displayed, in bold sky color
+truncation_length = 3     # Short
