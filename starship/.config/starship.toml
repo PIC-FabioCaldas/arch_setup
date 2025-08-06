@@ -13,6 +13,7 @@ $python\
 $line_break\
 $character
 """
+
 palette = "catppuccin_mocha"
 
 # ========== DIRECTORY MODULE ==========
