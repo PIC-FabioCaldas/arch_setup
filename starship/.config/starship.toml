@@ -1,104 +1,100 @@
-# ───────────────────────────────────────────────────────────
-#                  STARSHIP CONFIGURATION
-#   This file customizes the appearance and behavior of your
-#   shell prompt using the Starship prompt tool.
-#   Comments below explain each section in detail.
-# ───────────────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────
+#              STARSHIP CONFIGURATION
+# ──────────────────────────────────────────────────────────
 
-# GENERAL SETTINGS
-add_newline = false          # Don't add a newline between prompts (keep it compact)
-format = """$directory$os$line_break$character"""   # Defines what appears on the left prompt (directory, OS icon, line break, then prompt character)
-palette = "catppuccin_mocha" # Use the custom color palette defined below
-right_format = """$all"""    # Everything else (i.e., modules not named in `format`) appears on the right side of the prompt
-command_timeout = 500        # Timeout (ms) for command modules to run (e.g., git status)
+# ========== GENERAL SETTINGS ==========
+add_newline = false
+# """$os$username$hostname$directory$os$git_branch$line_break$character"""
+format = """
+$directory \
+$git_branch\
+$git_status\
+$python\
+$line_break\
+$character
+"""
+palette = "catppuccin_mocha"
 
-# DIRECTORY SUBSTITUTIONS
+# ========== DIRECTORY MODULE ==========
+[directory]
+format = "[$path](bold peach)"
+read_only = " 󰌾"
+truncation_length = 3           # Shorten path to 3 segments
+truncation_symbol = '…/'
+
 [directory.substitutions]
-# Substitutes common directory names with icons for a nicer look
+"Developer" = "󰲋 "
 "Documents" = "󰈙 "
 "Downloads" = " "
 "Music" = "󰝚 "
 "Pictures" = " "
-"Developer" = "󰲋 "
 
-# LINE BREAK
-[line_break]
-disabled = false             # Enables a line break between prompt segments (for readability)
-
-# GIT BRANCH
+# ========== GIT MODULE ==========
 [git_branch]
-symbol = " "               # Symbol before the branch name
-format = '[ $symbol$branch ]($style)'  # How the branch info is shown (with styling)
+symbol = " "
+style = "sapphire"
+format = '[on](white) [$symbol$branch ]($style)'
 
-# AWS MODULE
-[aws]
-format = '[$symbol(profile: "$profile" )(\(region: $region\) )]($style)'
-disabled = false
-style = 'bold blue'         # Text style for AWS info
-symbol = " "               # Symbol for AWS
+[git_status]
+style = "sapphire"
+format = '([$all_status$ahead_behind]($style) )'
 
-# GOLANG VERSION
-[golang]
-format = '[ $version](bold sky)' # Shows Go version in "sky" color with icon
-
-# KUBERNETES
-[kubernetes]
-symbol = '☸ '               # Kubernetes symbol
-disabled = true             # Disabled unless you want cluster info
-detect_files = ['Dockerfile']  # Triggers if Dockerfile is present
-format = '[$symbol$context( \($namespace\))]($style) '
-contexts = [
-  { context_pattern = "arn:aws:eks:us-west-2:577926974532:cluster/zd-pvc-omer", style = "green", context_alias = "omerxx", symbol = " " },
-] # You can define custom styles for contexts
-
-# COLOR PALETTE (used by many modules for consistent theming)
-[palettes.catppuccin_mocha]
-# Defines a set of named colors (Catppuccin Mocha theme) for use throughout the prompt
-rosewater = "#f5e0dc"
-flamingo = "#f2cdcd"
-pink = "#f5c2e7"
-mauve = "#cba6f7"
-red = "#f38ba8"
-maroon = "#eba0ac"
-peach = "#fab387"
-yellow = "#f9e2af"
-green = "#a6e3a1"
-teal = "#94e2d5"
-sky = "#89dceb"
-sapphire = "#74c7ec"
-blue = "#89b4fa"
-lavender = "#b4befe"
-text = "#cdd6f4"
-subtext1 = "#bac2de"
-subtext0 = "#a6adc8"
-overlay2 = "#9399b2"
-overlay1 = "#7f849c"
-overlay0 = "#6c7086"
-surface2 = "#585b70"
-surface1 = "#45475a"
-surface0 = "#313244"
-base = "#1e1e2e"
-mantle = "#181825"
-crust = "#11111b"
-
-# USERNAME MODULE
-[username]
-show_always = false         # Only show username when necessary (e.g., SSH)
-format = '[ elliot]($style)' # How username is shown
-
-# SYMBOLS FOR OTHER LANGUAGES/TOOLS
-# Each of these sections customizes the icon for a language or tool
-[buf]            # Buf (Protobuf tool)
-symbol = " "
-[c]              # C language
+# ========== LANGUAGE/TOOL SYMBOLS ==========
+[c]
 symbol = " "
-[conda]          # Conda environments
-symbol = " "
-[crystal]        # Crystal language
-symbol = " "
-[dart]           # Dart language
-symbol = " "
-[directory]      # Directory segment
-read_only = " 󰌾"         # Icon for read-only directories
-format = "[ $path ](bold sky)" # How the path is displayed, in bold sky color
-truncation_length = 3     # Short
+
+[cpp]
+symbol = " "
+
+[cmake]
+symbol = " "
+
+[docker_context]
+symbol = " "
+
+[package]
+symbol = "󰏗 "
+
+[python]
+symbol = " "
+style = "yellow"
+format = '[${symbol}(${version} )(\($virtualenv\) )]($style)'
+
+# ========== OPERATING SYSTEMS SYMBOLS ==========
+[os.symbols]
+Arch = " "
+Debian = " "
+Linux = " "
+Macos = " "
+Raspbian = " "
+Ubuntu = " "
+Windows = "󰍲 "
+
+# ========== COLOR PALETTE ==========
+[palettes.catppuccin_mocha]
+base = "#1e1e2e"
+blue = "#89b4fa"
+crust = "#11111b"
+flamingo = "#f2cdcd"
+green = "#a6e3a1"
+lavender = "#b4befe"
+mantle = "#181825"
+maroon = "#eba0ac"
+mauve = "#cba6f7"
+overlay0 = "#6c7086"
+overlay1 = "#7f849c"
+overlay2 = "#9399b2"
+peach = "#fab387"
+pink = "#f5c2e7"
+red = "#f38ba8"
+rosewater = "#f5e0dc"
+sapphire = "#74c7ec"
+sky = "#89dceb"
+subtext0 = "#a6adc8"
+subtext1 = "#bac2de"
+surface0 = "#313244"
+surface1 = "#45475a"
+surface2 = "#585b70"
+teal = "#94e2d5"
+text = "#cdd6f4"
+yellow = "#f9e2af"
