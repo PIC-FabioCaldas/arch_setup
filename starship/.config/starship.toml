@@ -1,27 +1,29 @@
 # ──────────────────────────────────────────────────────────
-#              STARSHIP CONFIGURATION
+#              STARSHIP CONFIGURATION - NIGHT LIGHT
 # ──────────────────────────────────────────────────────────
 
 # ========== GENERAL SETTINGS ==========
 add_newline = false
-# """$os$username$hostname$directory$os$git_branch$line_break$character"""
 format = """
-$directory \
+$directory\
 $git_branch\
 $git_status\
+$git_state\
 $python\
 $line_break\
 $character
 """
 
-palette = "catppuccin_mocha"
+palette = "night_light"
 
 # ========== DIRECTORY MODULE ==========
 [directory]
-format = "[$path](bold peach)"
+format = "[ $path ](bold lavender_bg text)"
+style = "bold lavender"
 read_only = " 󰌾"
-truncation_length = 3           # Shorten path to 3 segments
+truncation_length = 3
 truncation_symbol = '…/'
+disabled = false
 
 [directory.substitutions]
 "Developer" = "󰲋 "
@@ -33,30 +35,42 @@ truncation_symbol = '…/'
 # ========== GIT MODULE ==========
 [git_branch]
 symbol = " "
-style = "sapphire"
-format = '[on](white) [$symbol$branch ]($style)'
+style = "bold mauve"
+format = '[ $symbol$branch ]($style)'
 
 [git_status]
-style = "sapphire"
-staged = '[++\($count\)](green)'
+style = "bold red"
+staged = '[ +$count](green)'
+untracked = '[?$count](yellow)'
+conflicted = '[!$count](red)'
+deleted = '[-$count](red)'
+modified = '[~$count](mauve)'
+renamed = '[»$count](lavender)'
+format = '([$all_status]($style) )'
 
-format = '([$all_status$ahead_behind]($style) )'
+[git_state]
+style = "bold mauve"
+format = '\([$state( $progress_current/$progress_total)]($style)\) '
+
+# ========== PROMPT CHARACTER ==========
+[character]
+success_symbol = '[❯](bold lavender)'
+error_symbol = '[❯](bold red)'
+vicmd_symbol = '[❮](bold yellow)'
+disabled = false
 
 # ========== LANGUAGE/TOOL SYMBOLS ==========
 [c]
 symbol = " "
+style = "green"
 
 [cpp]
 symbol = " "
+style = "green"
 
 [cmake]
 symbol = " "
-
-[docker_context]
-symbol = " "
-
-[package]
-symbol = "󰏗 "
+style = "green"
 
 [python]
 symbol = " "
@@ -74,30 +88,32 @@ Ubuntu = " "
 Windows = "󰍲 "
 
 # ========== COLOR PALETTE ==========
-[palettes.catppuccin_mocha]
+[palettes.night_light]
 base = "#1e1e2e"
-blue = "#89b4fa"
-crust = "#11111b"
-flamingo = "#f2cdcd"
-green = "#a6e3a1"
-lavender = "#b4befe"
 mantle = "#181825"
-maroon = "#eba0ac"
-mauve = "#cba6f7"
-overlay0 = "#6c7086"
-overlay1 = "#7f849c"
-overlay2 = "#9399b2"
-peach = "#fab387"
-pink = "#f5c2e7"
-red = "#f38ba8"
-rosewater = "#f5e0dc"
-sapphire = "#74c7ec"
-sky = "#89dceb"
-subtext0 = "#a6adc8"
-subtext1 = "#bac2de"
+crust = "#11111b"
 surface0 = "#313244"
 surface1 = "#45475a"
 surface2 = "#585b70"
-teal = "#94e2d5"
 text = "#cdd6f4"
+subtext1 = "#bac2de"
+subtext0 = "#a6adc8"
+lavender = "#b4befe"
+lavender_bg = "#b4befe"
+text_bg = "#cdd6f4"
+mauve = "#cba6f7"
+red = "#f38ba8"
 yellow = "#f9e2af"
+green = "#a6e3a1"
+peach = "#fab387"
+overlay2 = "#9399b2"
+overlay1 = "#7f849c"
+overlay0 = "#6c7086"
+blue = "#89b4fa"
+sapphire = "#74c7ec"
+sky = "#89dceb"
+teal = "#94e2d5"
+flamingo = "#f2cdcd"
+maroon = "#eba0ac"
+pink = "#f5c2e7"
+rosewater = "#f5e0dc"

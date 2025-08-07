@@ -70,7 +70,7 @@ window {
   margin: 5px;
   padding: 10px;
   border: none;
-  background-color: @base;
+  background-color: @base
 }
 
 /* Outer Box */
