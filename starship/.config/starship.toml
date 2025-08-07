@@ -18,11 +18,11 @@ palette = "night_light"
 
 # ========== DIRECTORY MODULE ==========
 [directory]
-format = "[ $path ](bold lavender_bg text)"
 style = "bold lavender"
 read_only = " 󰌾"
 truncation_length = 3
 truncation_symbol = '…/'
+format = "[ $path ]($style)"
 disabled = false
 
 [directory.substitutions]
@@ -74,7 +74,7 @@ style = "green"
 
 [python]
 symbol = " "
-style = "yellow"
+style = "green"
 format = '[${symbol}(${version} )(\($virtualenv\) )]($style)'
 
 # ========== OPERATING SYSTEMS SYMBOLS ==========
