@@ -7,6 +7,7 @@
     "tray",
     "group/hw",
     "group/control",
+    "hyprland/language",
     "clock",
     "custom/notification",
   ],
@@ -113,6 +114,7 @@
       "<span color='#ffcb6b'></span>",
       "<span color='#ffcb6b'></span>",
     ],
+    "on-click": "kitty btop",
   },
   "custom/notification": {
     "tooltip": false,
