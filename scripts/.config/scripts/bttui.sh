@@ -1,105 +1,409 @@
 #!/usr/bin/env bash
+# filepath: /home/sozdc/arch_setup/scripts/.config/scripts/bttui.sh
 
-# This is a Bluetooth Terminal User Interface (TUI) script
-# It provides a simple menu-driven interface to manage Bluetooth devices
+#==============================================================================
+# Bluetooth Terminal User Interface (BTTUI)
+# A clean, terminal-based UI for managing Bluetooth devices
+#==============================================================================
 
-# --- INITIAL CHECKS ---
-# Check if bluetoothctl command exists on the system
-if ! command -v bluetoothctl &>/dev/null; then
-    echo "bluetoothctl not found. Install bluez-utils first."
-    exit 1  # Exit with error code 1 if bluetoothctl is not installed
-fi
+#------------------------------------------------------------------------------
+# Configuration
+#------------------------------------------------------------------------------
+TIMEOUT=10
+VERSION="1.0.0"
 
-# --- BLUETOOTH POWER CHECK ---
-# Turn on Bluetooth if it's currently powered off
-# The grep command checks if "Powered: no" exists in the output
-# If found, power on Bluetooth
-bluetoothctl show | grep -q "Powered: no" && bluetoothctl power on
+#------------------------------------------------------------------------------
+# Helper Functions
+#------------------------------------------------------------------------------
+show_notification() {
+    echo -e "\n$1"
+    read -p "Press Enter to continue..."
+}
 
-# --- MAIN MENU FUNCTION ---
-# This function displays the main menu options and handles user selection
-main_menu() {
-    while true; do  # Loop forever until user selects "Exit"
-        # Display menu with fzf (fuzzy finder) and store user selection in "choice"
-        choice=$(printf "Scan for devices\nList paired devices\nExit" | fzf --prompt="Bluetooth > ")
+ensure_bluetooth_ready() {
+    # Ensure Bluetooth is powered on
+    if bluetoothctl show | grep -q "Powered: no"; then
+        bluetoothctl power on
+        sleep 1
+    fi
+    
+    # Ensure Bluetooth is pairable
+    if bluetoothctl show | grep -q "Pairable: no"; then
+        bluetoothctl pairable on
+        sleep 1
+    fi
+}
 
-        # Execute different functions based on user's selection
+execute_bluetooth_command() {
+    local cmd="$1"
+    local mac="$2"
+    local desc="$3"
+    
+    echo "$desc..."
+    
+    # For connect command, add timeout equal to TIMEOUT
+    if [ "$cmd" = "connect" ]; then
+        echo "Attempting to connect (timeout: ${TIMEOUT}s)..."
+        
+        # Use timeout command to limit the connection attempt duration
+        result=$(timeout "$TIMEOUT" bluetoothctl "$cmd" "$mac" 2>&1)
+        
+        # Check if connection timed out
+        if [ $? -eq 124 ]; then
+            result="Connection attempt timed out after ${TIMEOUT} seconds."
+        fi
+    else
+        # For other commands, execute normally
+        result=$(bluetoothctl "$cmd" "$mac" 2>&1)
+    fi
+    
+    echo -e "\n$result"
+    read -p "Press Enter to continue..."
+}
+
+#------------------------------------------------------------------------------
+# Device Management Functions
+#------------------------------------------------------------------------------
+scan_for_devices() {
+    ensure_bluetooth_ready
+    
+    echo -e "\nScanning for Bluetooth devices..."
+    
+    # Clear any previous device list
+    bluetoothctl devices Clear &>/dev/null
+    
+    # Start scanning with countdown
+    bluetoothctl --timeout $TIMEOUT scan on &>/dev/null &
+    scan_pid=$!
+    
+    for ((i=TIMEOUT; i>0; i--)); do
+        # Clear the line completely before printing
+        echo -ne "\033[2K\r"
+        
+        # Print the appropriate message
+        if [ $i -eq 1 ]; then
+            echo -ne "Scanning... $i second remaining"
+        else
+            echo -ne "Scanning... $i seconds remaining"
+        fi
+        
+        # Move cursor to beginning of line for next iteration
+        echo -ne "\r"
+        sleep 1
+    done
+    echo -e "\nScan complete"
+    
+    # Ensure scan is stopped
+    kill $scan_pid 2>/dev/null
+    bluetoothctl scan off &>/dev/null
+    
+    # Get list of discovered devices
+    devices=$(bluetoothctl devices | grep "^Device" | awk '{print $2 " " substr($0, index($0,$3))}')
+    
+    if [[ -z "$devices" ]]; then
+        show_notification "No devices found"
+        return
+    fi
+    
+    # Enhance device list with better names
+    enhanced_devices=""
+    while IFS= read -r dev; do
+        if [[ -n "$dev" ]]; then
+            mac=$(echo "$dev" | awk '{print $1}')
+            default_name=$(echo "$dev" | awk '{$1=""; print substr($0,2)}')
+            default_name="${default_name# }"  # Trim leading space
+            
+            # Try to get a better name for the device
+            device_info=$(bluetoothctl info "$mac")
+            better_name=$(echo "$device_info" | grep -E "Name:|Alias:" | head -n 1 | cut -d':' -f2- | xargs)
+            
+            if [[ -n "$better_name" && "$better_name" != "$mac" ]]; then
+                enhanced_devices+="$mac  $better_name"$'\n'
+            else
+                enhanced_devices+="$dev"$'\n'
+            fi
+        fi
+    done <<< "$devices"
+    
+    # Present enhanced device list to user
+    dev=$(echo "$enhanced_devices" | fzf --prompt="Select device > ") || return
+    
+    mac=$(echo "$dev" | awk '{print $1}')
+    name=$(echo "$dev" | awk '{$1=""; print substr($0,2)}')
+    name="${name# }"  # Trim leading space
+    
+    device_menu "$mac" "$name"
+}
+
+list_paired_devices() {
+    ensure_bluetooth_ready
+    
+    echo -e "\nFetching paired devices..."
+    
+    # Try multiple approaches to extract device info
+    devices=""
+    
+    # Method 1: Standard method
+    devices=$(echo "paired-devices" | bluetoothctl | grep "^Device" | awk '{print $2 " " substr($0, index($0,$3))}')
+    
+    # Method 2: If that didn't work, try other methods
+    if [[ -z "$devices" ]]; then
+        devices=$(bluetoothctl devices | grep "^Device" | awk '{print $2 " " substr($0, index($0,$3))}')
+        
+        # Filter for paired devices only
+        if [[ -n "$devices" ]]; then
+            temp_devices=""
+            while IFS= read -r dev; do
+                mac=$(echo "$dev" | awk '{print $1}')
+                if bluetoothctl info "$mac" | grep -q "Paired: yes"; then
+                    temp_devices+="$dev"$'\n'
+                fi
+            done <<< "$devices"
+            devices="$temp_devices"
+        fi
+    fi
+    
+    # Check if any devices were found
+    if [[ -z "$devices" ]]; then
+        echo -e "\nNo paired devices found."
+        echo "Try scanning for devices and pairing first."
+        read -p "Press Enter to continue..."
+        return
+    fi
+    
+    # Enhance device list with better names
+    enhanced_devices=""
+    while IFS= read -r dev; do
+        if [[ -n "$dev" ]]; then
+            mac=$(echo "$dev" | awk '{print $1}')
+            
+            # Try to get a better name for the device
+            device_info=$(bluetoothctl info "$mac")
+            better_name=$(echo "$device_info" | grep -E "Name:|Alias:" | head -n 1 | cut -d':' -f2- | xargs)
+            
+            if [[ -n "$better_name" ]]; then
+                enhanced_devices+="$mac  $better_name"$'\n'
+            else
+                enhanced_devices+="$dev"$'\n'
+            fi
+        fi
+    done <<< "$devices"
+    
+    # Present enhanced device list to user
+    dev=$(echo "$enhanced_devices" | fzf --prompt="Select paired device > ") || return
+    
+    mac=$(echo "$dev" | awk '{print $1}')
+    name=$(echo "$dev" | awk '{$1=""; print substr($0,2)}')
+    name="${name# }"  # Trim leading space
+    
+    device_menu "$mac" "$name"
+}
+
+device_menu() {
+    local mac="$1"
+    local name="$2"
+    
+    # If name is empty or same as MAC, try to get a better name
+    if [[ -z "$name" || "$name" == "$mac" ]]; then
+        local info_output=$(bluetoothctl info "$mac")
+        local better_name=$(echo "$info_output" | grep -E "Name:|Alias:" | head -n 1 | cut -d':' -f2- | xargs)
+        
+        if [[ -n "$better_name" ]]; then
+            name="$better_name"
+        fi
+    fi
+    
+    # Clean up the name
+    if [[ -n "$name" ]]; then
+        name=$(echo "$name" | xargs)
+    fi
+    
+    # Make sure we have a display name
+    local display_name="${name:-$mac}"
+    
+    while true; do
+        choice=$(printf "Connect\nDisconnect\nPair\nTrust\nTrust + Pair + Connect\nInfo\nRemove\nBack" | 
+                 fzf --prompt="Device: $display_name > ")
+        
         case "$choice" in
-            "Scan for devices") scan_devices ;;      # Call scan_devices function
-            "List paired devices") paired_devices ;; # Call paired_devices function
-            "Exit") exit 0 ;;                        # Exit the script with success code 0
+            "Connect") 
+                # Check if device is already connected before attempting to connect
+                if bluetoothctl info "$mac" | grep -q "Connected: yes"; then
+                    echo -e "\nDevice is already connected!"
+                    read -p "Press Enter to continue..."
+                else
+                    execute_bluetooth_command "connect" "$mac" "Connecting to device" 
+                fi
+                ;;
+                
+            "Disconnect") 
+                execute_bluetooth_command "disconnect" "$mac" "Disconnecting from device" ;;
+                
+            "Pair") 
+                echo -e "\nMake sure device is in pairing mode..."
+                execute_bluetooth_command "pair" "$mac" "Pairing with device" ;;
+                
+            "Trust") 
+                execute_bluetooth_command "trust" "$mac" "Trusting device" ;;
+                
+            "Trust + Pair + Connect")
+                echo -e "\nStarting comprehensive pairing sequence..."
+                
+                echo "Step 1: Trusting device"
+                bluetoothctl trust "$mac"
+                sleep 1
+                
+                echo -e "\nStep 2: Pairing with device"
+                echo "Make sure device is in pairing mode!"
+                bluetoothctl pair "$mac"
+                sleep 2
+                
+                echo -e "\nStep 3: Checking connection status"
+                if bluetoothctl info "$mac" | grep -q "Connected: yes"; then
+                    echo "Device is already connected!"
+                else
+                    echo "Connecting to device (timeout: ${TIMEOUT}s)..."
+                    timeout "$TIMEOUT" bluetoothctl connect "$mac"
+                    
+                    # Check if connection timed out
+                    if [ $? -eq 124 ]; then
+                        echo "Connection attempt timed out after ${TIMEOUT} seconds."
+                    fi
+                fi
+                
+                read -p "Press Enter to continue..."
+                ;;
+                
+            "Info")
+                echo -e "\nDevice Information:"
+                bluetoothctl info "$mac" | grep -v "^Controller" | grep -v "^$"
+                read -p "Press Enter to continue..."
+                ;;
+                
+            "Remove") 
+                execute_bluetooth_command "remove" "$mac" "Removing device" ;;
+                
+            "Back") 
+                return ;;
         esac
     done
 }
 
-# --- SCAN FOR DEVICES FUNCTION ---
-# This function scans for available Bluetooth devices
-scan_devices() {
-    echo "Scanning for 5 seconds..."
-    # Start scanning in background (hide output with &>/dev/null)
-    # & at the end makes it run in background
-    bluetoothctl scan on &>/dev/null &
-    scan_pid=$!  # Store the process ID of the background scan
-    sleep 5      # Wait for 5 seconds
-    kill $scan_pid 2>/dev/null  # Kill the scanning process
-    bluetoothctl scan off &>/dev/null  # Turn off scanning
-
-    # Get list of discovered devices, format with awk
-    # awk extracts MAC address and device name
-    devices=$(bluetoothctl devices | awk '{print $2 " " substr($0, index($0,$3))}')
+#------------------------------------------------------------------------------
+# Information Display Functions
+#------------------------------------------------------------------------------
+show_bluetooth_status() {
+    echo -e "\nBluetooth Adapter Status"
+    echo "=========================="
+    bluetoothctl show | grep -E "Name|Powered|Discoverable|Pairable|Controller" 
     
-    # Check if no devices were found
-    [[ -z "$devices" ]] && echo "No devices found" && return
-
-    # Show list of devices with fzf and let user select one
-    dev=$(echo "$devices" | fzf --prompt="Select device > ") || return
-    # Extract the MAC address from the selected device
-    mac=$(echo "$dev" | awk '{print $1}')
-    # Open device-specific menu for the selected device
-    device_menu "$mac"
+    echo -e "\nConnected Devices"
+    echo "================="
+    if ! bluetoothctl info | grep -q "Device"; then
+        echo "No connected devices"
+    else
+        bluetoothctl info
+    fi
+    
+    read -p "Press Enter to continue..."
 }
 
-# --- PAIRED DEVICES FUNCTION ---
-# This function shows already paired Bluetooth devices
-paired_devices() {
-    # Use echo to send command to bluetoothctl in non-interactive mode
-    # grep filters for lines containing "Device"
-    # awk formats the output to show MAC address and device name
-    devices=$(echo "paired-devices" | bluetoothctl | grep "Device" | awk '{print $2 " " substr($0, index($0,$3))}')
+#------------------------------------------------------------------------------
+# Bluetooth State Management Submenu
+#------------------------------------------------------------------------------
+bsm_submenu() {
+    while true; do
+        choice=$(printf "Show Bluetooth status\nRestart Bluetooth service\nToggle Bluetooth power\nToggle Bluetooth discoverable\nBack to main menu" | 
+                fzf --prompt="Bluetooth State Management > ")
+        
+        case "$choice" in
+            "Show Bluetooth status")
+                show_bluetooth_status ;;
+                
+            "Restart Bluetooth service")
+                echo -e "\nRestarting Bluetooth service..."
+                sudo systemctl restart bluetooth
+                sleep 2
+                echo "Bluetooth service restarted"
+                read -p "Press Enter to continue..." ;;
+                
+            "Toggle Bluetooth power")
+                if bluetoothctl show | grep -q "Powered: no"; then
+                    echo -e "\nTurning Bluetooth on..."
+                    bluetoothctl power on
+                    echo "Bluetooth powered on"
+                else
+                    echo -e "\nTurning Bluetooth off..."
+                    bluetoothctl power off
+                    echo "Bluetooth powered off"
+                fi
+                read -p "Press Enter to continue..." ;;
+                
+            "Toggle Bluetooth discoverable")
+                if bluetoothctl show | grep -q "Discoverable: no"; then
+                    echo -e "\nMaking Bluetooth discoverable..."
+                    bluetoothctl discoverable on
+                    echo "Bluetooth is now discoverable"
+                else
+                    echo -e "\nMaking Bluetooth non-discoverable..."
+                    bluetoothctl discoverable off
+                    echo "Bluetooth is now hidden"
+                fi
+                read -p "Press Enter to continue..." ;;
+                
+            "Back to main menu")
+                return ;;
+                
+            *)
+                echo "Invalid selection" ;;
+        esac
+    done
+}
+
+#------------------------------------------------------------------------------
+# Main Program
+#------------------------------------------------------------------------------
+main() {
+    # Check dependencies
+    if ! command -v bluetoothctl &>/dev/null; then
+        echo "Error: bluetoothctl not found. Install bluez-utils first."
+        exit 1
+    fi
     
-    # If no paired devices found, show message and wait for user acknowledgment
-    if [[ -z "$devices" ]]; then
-        echo "No paired devices" | fzf --prompt="Press Enter to continue > "
-        return  # Return to main menu
+    if ! command -v fzf &>/dev/null; then
+        echo "Error: fzf not found. Install fzf first."
+        exit 1
     fi
 
-    # Show list of paired devices with fzf and let user select one
-    dev=$(echo "$devices" | fzf --prompt="Select paired device > ") || return
-    # Extract the MAC address from the selected device
-    mac=$(echo "$dev" | awk '{print $1}')
-    # Open device-specific menu for the selected device
-    device_menu "$mac"
-}
+    # Ensure Bluetooth is ready
+    ensure_bluetooth_ready
 
-# --- DEVICE MENU FUNCTION ---
-# This function shows actions that can be performed on a specific device
-device_menu() {
-    mac=$1  # Store the MAC address passed to this function
-    while true; do  # Loop until user selects "Back"
-        # Display device-specific menu with fzf
-        choice=$(printf "Connect\nDisconnect\nPair\nRemove\nBack" | fzf --prompt="$mac > ")
-
-        # Execute different bluetoothctl commands based on user selection
+    # Main menu loop
+    while true; do
+        # Build menu options
+        menu_options="Scan for devices\nList paired devices\nBSM (Bluetooth State Management)\nExit"
+        
+        choice=$(printf "$menu_options" | fzf --prompt="Bluetooth TUI > ")
+        
         case "$choice" in
-            "Connect") bluetoothctl connect "$mac" ;;      # Connect to device
-            "Disconnect") bluetoothctl disconnect "$mac" ;; # Disconnect from device
-            "Pair") bluetoothctl pair "$mac" ;;           # Pair with device
-            "Remove") bluetoothctl remove "$mac" ;;       # Remove/unpair device
-            "Back") return ;;                             # Return to previous menu
+            "Scan for devices")
+                scan_for_devices ;;
+                
+            "List paired devices")
+                list_paired_devices ;;
+                
+            "BSM (Bluetooth State Management)")
+                bsm_submenu ;;
+                
+            "Exit")
+                echo -e "\nThank you for using BTTUI!"
+                exit 0 ;;
+                
+            *)
+                echo "Invalid selection" ;;
         esac
     done
 }
 
-# --- SCRIPT EXECUTION STARTS HERE ---
-# Call the main menu function to start the script
-main_menu
+# Start the program
+main
