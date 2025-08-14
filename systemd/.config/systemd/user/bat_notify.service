@@ -1,0 +1,14 @@
+[Unit]
+Description=Battery notification service
+
+[Service]
+ExecStart=%h/.config/scripts/bat_notify.sh
+Restart=always
+
+[Install]
+WantedBy=default.target
+
+
+
+
+
