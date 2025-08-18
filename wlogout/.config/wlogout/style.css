@@ -1,0 +1,81 @@
+@define-color lavender      #b4befe;
+@define-color lavender-rgb  rgb(180, 190, 254);
+@define-color peach         #fab387;
+@define-color peach-rgb     rgb(250, 179, 135);
+@define-color yellow        #f9e2af;
+@define-color yellow-rgb    rgb(249, 226, 175);
+@define-color mauve         #cba6f7;
+@define-color mauve-rgb     rgb(203, 166, 247);
+@define-color red           #f38ba8;
+@define-color red-rgb       rgb(243, 139, 168);
+@define-color green         #a6e3a1;
+@define-color green-rgb     rgb(166, 227, 161);
+
+@define-color base          #1e1e2e;
+@define-color base-rgb      rgb(30, 30, 46);
+@define-color surface0      #313244;
+@define-color surface0-rgb  rgb(49, 50, 68);
+@define-color surface1      #45475a;
+@define-color surface1-rgb  rgb(69, 71, 90);
+
+@define-color text          #cdd6f4;
+@define-color text-rgb      rgb(205, 214, 244);
+@define-color subtext1      #bac2de;
+@define-color subtext1-rgb  rgb(186, 194, 222);
+@define-color subtext0      #a6adc8;
+@define-color subtext0-rgb  rgb(166, 173, 200);
+
+@define-color overlay0      #6c7086;
+@define-color overlay1      #7f849c;
+@define-color overlay2      #9399b2;
+
+* {
+    background-image: none;
+    box-shadow: none;
+}
+
+window {
+    background-color: @base;  /* Semi-transparent dark base (e.g., $base from your theme) */
+}
+
+button {
+    border-radius: 0;
+    border-color: @surface0;  /* Surface0 for border */
+    text-decoration-color: @text;  /* Text color */
+    color: @text;  /* Text color */
+    background-color: @base;  /* Base background */
+    border-style: solid;
+    border-width: 1px;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 25%;
+}
+
+button:focus, button:active, button:hover {
+    background-color: @overlay0;
+    outline-style: none;
+}
+
+#lock {
+    background-image: image(url("/usr/share/wlogout/icons/lock.png"), url("/usr/local/share/wlogout/icons/lock.png"), url("icons/lock.png"));
+}
+
+#logout {
+    background-image: image(url("/usr/share/wlogout/icons/logout.png"), url("/usr/local/share/wlogout/icons/logout.png"), url("icons/logout.png"));
+}
+
+#suspend {
+    background-image: image(url("/usr/share/wlogout/icons/suspend.png"), url("/usr/local/share/wlogout/icons/suspend.png"), url("icons/suspend.png"));
+}
+
+#hibernate {
+    background-image: image(url("/usr/share/wlogout/icons/hibernate.png"), url("/usr/local/share/wlogout/icons/hibernate.png"), url("icons/hibernate.png"));
+}
+
+#shutdown {
+    background-image: image(url("/usr/share/wlogout/icons/shutdown.png"), url("/usr/local/share/wlogout/icons/shutdown.png"), url("icons/shutdown.png"));
+}
+
+#reboot {
+    background-image: image(url("/usr/share/wlogout/icons/reboot.png"), url("/usr/local/share/wlogout/icons/reboot.png"), url("icons/reboot.png"));
+}

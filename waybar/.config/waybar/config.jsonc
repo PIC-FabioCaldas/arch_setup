@@ -3,13 +3,13 @@
   //"layer": "top", // Waybar at top layer
   "height": 40,
   "modules-left": ["hyprland/workspaces", "hyprland/window"],
+  "modules-center": ["clock", "custom/notification"],
   "modules-right": [
     "tray",
     "group/hw",
     "group/control",
     "hyprland/language",
-    "clock",
-    "custom/notification",
+    "custom/power"
   ],
   "hyprland/workspaces": {
     "on-click": "activate",
@@ -24,43 +24,45 @@
       "7": "<b>7</b>",
       "8": "<b>8</b>",
       "9": "<b>9</b>",
-    },
+    }
   },
   "hyprland/window": {},
   "tray": {
     "icon-size": 17,
-    "spacing": 8,
+    "spacing": 8
   },
   "group/hw": {
     "orientation": "horizontal",
-    "modules": ["cpu", "memory", "temperature"],
+    "modules": ["cpu", "memory", "temperature"]
   },
   "cpu": {
     "format": "<span color='#b2ccd6'>󰍛</span> {usage}%",
     "interval": 2,
-    "on-click": "kitty btop",
+    "on-click": "kitty btop"
   },
   "memory": {
     "format": "<span color='#c792ea'>󰘚</span> {used:.2g}GB",
     "interval": 2,
-    "on-click": "kitty btop",
+    "on-click": "kitty btop"
   },
   "group/control": {
     "orientation": "horizontal",
-    "modules": ["battery", "network", "bluetooth", "pulseaudio", "backlight"],
+    "modules": ["battery", "network", "bluetooth", "pulseaudio", "backlight"]
   },
+
   "battery": {
     "states": {
-    "good": 95,
-     "warning": 30,
-    "critical": 15,
+      "good": 80,
+      "warning": 25,
+      "critical": 10
     },
     "format": "<span color='#c3e88d'>{icon}</span> {capacity}%",
     "format-charging": "<span color='#c3e88d'>󰂄</span> {capacity}%",
     "format-plugged": "<span color='#c3e88d'></span> {capacity}%",
     "tooltip-format": "{time} left",
-    "format-icons": ["", "", "", "", ""],
+    "format-icons": ["", "", "", "", ""]
   },
+
   "network": {
     "format-ethernet": "<span color='#89ddff'>󰈁</span> {bandwidthDownBytes:=}",
     "format-wifi": "<span color='#89ddff'>{icon}</span> {signalStrength}% | {bandwidthDownBytes}",
@@ -68,13 +70,13 @@
     "format-icons": ["󰤯", "󰤟", "󰤢", "󰤥", "󰤨"],
     "interval": 2,
     "tooltip-format": "{essid}",
-    "on-click": "kitty nmtui",
+    "on-click": "kitty nmtui"
   },
   "bluetooth": {
     "format": "<span color='#82aaff'></span> {status}",
     "format-connected-battery": "<span color='#82aaff'>󰥉</span> {device_battery_percentage}%",
     "tooltip-format": "{device_alias} {status}",
-    "on-click": "kitty .config/scripts/bttui.sh",
+    "on-click": "kitty .config/scripts/bttui.sh"
   },
   "pulseaudio": {
     "format": "<span color='#f78c6c'>{icon}</span> {volume}%",
@@ -85,19 +87,20 @@
       "headphone": "",
       "phone": "",
       "portable": "󰓃",
-      "default": ["", "", ""],
+      "default": ["", "", ""]
     },
-    "on-click": "pavucontrol",
+    "on-click": "pavucontrol"
   },
   "backlight": {
     "device": "intel_backlight",
     "format": "<span color='#ffcb6b'>󰖨</span> {percent}%",
-    "tooltip": false,
+    "tooltip": false
   },
   "hyprland/language": {
     "format": "<span color='#c792ea'></span> {shortDescription} ",
     "keyboard-name": "at-translated-set-2-keyboard",
     "min-length": 5,
+    "on-click": "hyprctl switchxkblayout at-translated-set-2-keyboard next"
   },
   "clock": {
     "timezone": "Europe/Lisbon",
@@ -135,4 +138,9 @@
     "margin-left": 10,
     "margin-right": 5,
   },
+  "custom/power": {
+    "format": "<span color='#f07178'></span>",
+    "on-click": "pkill wlogout || wlogout",
+    "tooltip": false
+  }
 }

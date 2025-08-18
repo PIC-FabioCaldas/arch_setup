@@ -81,6 +81,29 @@ window#waybar.empty #window {
   margin-right: 8px;
 }
 
+/* Text stays constant */
+#battery {
+    color: @text; /* text percentage color */
+}
+
+/* Icon coloring per state */
+#battery.good .icon {
+    color: #c3e88d; /* green */
+}
+
+#battery.warning .icon {
+    color: #ffcb6b; /* yellow */
+}
+
+#battery.critical .icon {
+    color: #f07178; /* red */
+}
+
+#battery.charging .icon {
+    color: #82aaff; /* blue */
+}
+
+
 #network {
   margin: 0px 8px;
 }
@@ -116,4 +139,15 @@ window#waybar.empty #window {
   border-radius: 18px;
   padding: 0px 16px;
   margin: 8px 8px 0px 4px;
+}
+
+#custom-power {
+  background-color: @background;
+  border-radius: 18px;
+  padding: 0px 16px;
+  margin: 8px 8px 0px 4px;
+}
+
+#custom-power:hover {
+  color: @highlight;
 }

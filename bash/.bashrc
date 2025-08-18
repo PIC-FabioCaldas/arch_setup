@@ -22,3 +22,18 @@ function y() {
 	[ -n "$cwd" ] && [ "$cwd" != "$PWD" ] && builtin cd -- "$cwd"
 	rm -f -- "$tmp"
 }
+
+
+# __________THESIS__________
+# _____PIPX install path_____
+export PATH="$HOME/.local/bin:$PATH"
+
+# _____LATEX things for thesis_____
+export PATH=$PATH:/usr/local/texlive/2025/bin/x86_64-linux
+export CHTEXRC=/usr/local/texlive/2025/texmf-dist/chktex/chktexrc
+export PATH=/usr/local/texlive/2025/bin/x86_64-linux:$PATH
+export TEXMFROOT=/usr/local/texlive/2025
+export TEXMFSYSVAR=/usr/local/texlive/2025/texmf-var
+export TEXMFSYSCONFIG=/usr/local/texlive/2025/texmf-config
+export TEXMFLOCAL=/usr/local/texlive/texmf-local
+export TEXMFDIST=/usr/local/texlive/2025/texmf-dist
