@@ -19,5 +19,5 @@ while true; do
         fi
     fi
 
-    sleep 300  # check every minute
+    sleep 300  # check every 5 minutes
 done
