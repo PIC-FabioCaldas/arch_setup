@@ -11,6 +11,7 @@
 #------------------------------------------------------------------------------
 TIMEOUT=10
 VERSION="1.0.0"
+AUTO_ENABLE=true
 
 #------------------------------------------------------------------------------
 # Helper Functions
@@ -21,16 +22,41 @@ show_notification() {
 }
 
 ensure_bluetooth_ready() {
+    # Optionally skip automatic enabling
+    if [ "$AUTO_ENABLE" != true ]; then
+        return
+    fi
+
     # Ensure Bluetooth is powered on
     if bluetoothctl show | grep -q "Powered: no"; then
         bluetoothctl power on
         sleep 1
     fi
-    
+
     # Ensure Bluetooth is pairable
     if bluetoothctl show | grep -q "Pairable: no"; then
         bluetoothctl pairable on
         sleep 1
+    fi
+}
+
+restore_bluetooth_state() {
+    # Restore Bluetooth power state
+    if [ -n "$initial_power_state" ]; then
+        if [ "$initial_power_state" = "yes" ]; then
+            bluetoothctl power on
+        else
+            bluetoothctl power off
+        fi
+    fi
+
+    # Restore Bluetooth pairable state
+    if [ -n "$initial_pairable_state" ]; then
+        if [ "$initial_pairable_state" = "yes" ]; then
+            bluetoothctl pairable on
+        else
+            bluetoothctl pairable off
+        fi
     fi
 }
 
@@ -364,16 +390,33 @@ bsm_submenu() {
 # Main Program
 #------------------------------------------------------------------------------
 main() {
+    # Parse command-line flags
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --skip-enable|-s)
+                AUTO_ENABLE=false
+                shift ;;
+            *)
+                echo "Usage: $(basename "$0") [--skip-enable]" >&2
+                exit 1 ;;
+        esac
+    done
+
     # Check dependencies
     if ! command -v bluetoothctl &>/dev/null; then
         echo "Error: bluetoothctl not found. Install bluez-utils first."
         exit 1
     fi
-    
+
     if ! command -v fzf &>/dev/null; then
         echo "Error: fzf not found. Install fzf first."
         exit 1
     fi
+
+    # Store initial Bluetooth states
+    initial_power_state=$(bluetoothctl show | awk '/Powered:/ {print $2}')
+    initial_pairable_state=$(bluetoothctl show | awk '/Pairable:/ {print $2}')
+    trap restore_bluetooth_state EXIT
 
     # Ensure Bluetooth is ready
     ensure_bluetooth_ready
@@ -406,4 +449,4 @@ main() {
 }
 
 # Start the program
-main
+main "$@"
