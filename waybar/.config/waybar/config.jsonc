@@ -37,12 +37,12 @@
   },
   "cpu": {
     "format": "<span color='#b2ccd6'>󰍛</span> {usage}%",
-    "interval": 2,
+    "interval": 10,
     "on-click": "kitty btop"
   },
   "memory": {
     "format": "<span color='#c792ea'>󰘚</span> {used:.2g}GB",
-    "interval": 2,
+    "interval": 10,
     "on-click": "kitty btop"
   },
   "group/control": {
@@ -68,7 +68,7 @@
     "format-wifi": "<span color='#89ddff'>{icon}</span> {signalStrength}% | {bandwidthDownBytes}",
     "format-disconnected": "<span color='#89ddff'>󰤭</span>",
     "format-icons": ["󰤯", "󰤟", "󰤢", "󰤥", "󰤨"],
-    "interval": 2,
+    "interval": 10,
     "tooltip-format": "{essid}",
     "on-click": "kitty nmtui"
   },
