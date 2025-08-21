@@ -35,7 +35,7 @@
 }
 
 window {
-    background-color: @base;  /* Semi-transparent dark base (e.g., $base from your theme) */
+    background-color: rgba(30, 30, 46, 0.8);  /* Semi-transparent dark base (e.g., $base from your theme) */
 }
 
 button {

@@ -13,7 +13,7 @@ alias ls='ls --color=auto'
 alias grep='grep --color=auto'
 
 # _____YAZI SETUP_____
-export EDITOR="nvim" 
+export EDITOR="code" 
 # shell wrapper that provides the ability to change the current working directory when exiting Yazi.
 function y() {
 	local tmp="$(mktemp -t "yazi-cwd.XXXXXX")" cwd
